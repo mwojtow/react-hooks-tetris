@@ -1,32 +1,47 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { usePlayer } from "../hooks/usePlayer";
 import { useStage } from "../hooks/useStage";
 import Display from "./Display";
 import Stage from "./Stage";
 import StartButton from "./StartButton";
 import { StyledTetris, StyledTetrisWrapper } from "./styles/StyledTetris";
-import { createStage } from "../helpers/gameHelpers";
-import { create } from "domain";
+import { createStage, checkCollision } from "../helpers/gameHelpers";
 
 const Tetris = () => {
   const [dropTime, setDropTime] = useState(null);
   const [gameOver, setGameOver] = useState(false);
 
   const [player, updatePlayerPos, resetPlayer] = usePlayer();
-  const [stage, setStage] = useStage(player);
+  const [stage, setStage] = useStage(player, resetPlayer);
+
+  console.log("re-render");
 
   const movePlayer = dir => {
-    updatePlayerPos({ x: dir, y: 0, collided: false });
+    if (!checkCollision(player, stage, { x: dir, y: 0 })) {
+      updatePlayerPos({ x: dir, y: 0 });
+    }
   };
 
   const startGame = () => {
-    //reset all
+    console.log("test");
+    // Reset everything
     setStage(createStage());
     resetPlayer();
+    setGameOver(false);
   };
 
   const drop = () => {
-    updatePlayerPos({ x: 0, y: 1, collided: false });
+    if (!checkCollision(player, stage, { x: 0, y: 1 })) {
+      updatePlayerPos({ x: 0, y: 1, collided: false });
+    } else {
+      // Game Over
+      if (player.pos.y < 1) {
+        console.log("GAME OVER!!!");
+        setGameOver(true);
+        setDropTime(null);
+      }
+      updatePlayerPos({ x: 0, y: 0, collided: true });
+    }
   };
 
   const dropPlayer = () => {
@@ -45,7 +60,6 @@ const Tetris = () => {
     }
   };
 
-  console.log("re-render");
   return (
     <StyledTetrisWrapper role="button" tabIndex="0" onKeyDown={e => move(e)}>
       <StyledTetris>
@@ -55,9 +69,9 @@ const Tetris = () => {
             <Display gameOver={gameOver} text="Game Over" />
           ) : (
             <div>
-              <Display text="Score"></Display>
-              <Display text="Rows"></Display>
-              <Display text="Level"></Display>
+              <Display text="Score" />
+              <Display text="Rows" />
+              <Display text="Level" />
             </div>
           )}
           <StartButton callback={startGame} />
