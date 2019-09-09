@@ -1,3 +1,5 @@
+This project was created based on [React Tetris with Hooks!](https://www.youtube.com/playlist?list=PL0jpcQ5lO0nEH2BpPmJhePz_urgyAljFB).
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
