@@ -1,17 +1,18 @@
 import React, { useState } from "react";
+import { checkCollision, createStage } from "../helpers/gameHelpers";
 import { usePlayer } from "../hooks/usePlayer";
 import { useStage } from "../hooks/useStage";
+import { useInterval } from "../hooks/useInterval";
 import Display from "./Display";
 import Stage from "./Stage";
 import StartButton from "./StartButton";
 import { StyledTetris, StyledTetrisWrapper } from "./styles/StyledTetris";
-import { createStage, checkCollision } from "../helpers/gameHelpers";
 
 const Tetris = () => {
   const [dropTime, setDropTime] = useState(null);
   const [gameOver, setGameOver] = useState(false);
 
-  const [player, updatePlayerPos, resetPlayer] = usePlayer();
+  const [player, updatePlayerPos, resetPlayer, playerRotate] = usePlayer();
   const [stage, setStage] = useStage(player, resetPlayer);
 
   console.log("re-render");
@@ -23,9 +24,9 @@ const Tetris = () => {
   };
 
   const startGame = () => {
-    console.log("test");
     // Reset everything
     setStage(createStage());
+    setDropTime(1000);
     resetPlayer();
     setGameOver(false);
   };
@@ -44,7 +45,18 @@ const Tetris = () => {
     }
   };
 
+  const keyUp = ({ keyCode }) => {
+    if (!gameOver) {
+      if (keyCode === 40) {
+        console.log("interval on");
+        setDropTime(1000);
+      }
+    }
+  };
+
   const dropPlayer = () => {
+    console.log("interval off");
+    setDropTime(null);
     drop();
   };
 
@@ -56,12 +68,23 @@ const Tetris = () => {
         movePlayer(1);
       } else if (keyCode === 40) {
         dropPlayer();
+      } else if (keyCode === 38) {
+        playerRotate(stage, 1);
       }
     }
   };
 
+  useInterval(() => {
+    drop();
+  }, dropTime);
+
   return (
-    <StyledTetrisWrapper role="button" tabIndex="0" onKeyDown={e => move(e)}>
+    <StyledTetrisWrapper
+      role="button"
+      tabIndex="0"
+      onKeyDown={e => move(e)}
+      onKeyUp={keyUp}
+    >
       <StyledTetris>
         <Stage stage={stage} />
         <aside>
